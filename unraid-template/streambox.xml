@@ -22,7 +22,7 @@
   <Category>MediaApp:Video MediaServer:Video</Category>
   <WebUI>http://[IP]:[PORT:6080]/vnc.html?autoconnect=true&amp;resize=scale</WebUI>
   <Icon>https://raw.githubusercontent.com/asim2202/docker-streambox/main/icon.png</Icon>
-  <ExtraParams>--shm-size=2g</ExtraParams>
+  <ExtraParams>--shm-size=2g --device=/dev/dri:/dev/dri</ExtraParams>
   <Description>
     StreamBox provides a virtual desktop that streams to an RTMP server.
     Access the desktop via your browser (noVNC), VNC client, or SSH.
@@ -162,6 +162,18 @@
     Required="false"
     Mask="false"
   >4500k</Config>
+
+  <!-- Encoder -->
+  <Config
+    Name="Video Encoder"
+    Target="ENCODER"
+    Default="qsv"
+    Description="Video encoder: 'qsv' for Intel Quick Sync (recommended, requires Intel GPU passthrough), 'x264' for CPU software encoding."
+    Type="Variable"
+    Display="always"
+    Required="false"
+    Mask="false"
+  >qsv</Config>
 
   <!-- Encoder Preset -->
   <Config

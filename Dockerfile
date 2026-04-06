@@ -15,6 +15,7 @@ ENV FPS=60
 ENV VIDEO_BITRATE=4500k
 ENV AUDIO_BITRATE=128k
 ENV ENCODER_PRESET=veryfast
+ENV ENCODER=qsv
 ENV RTMP_URL=rtmp://localhost/live
 ENV STREAM_KEY=stream
 ENV VNC_PASSWORD=streambox
@@ -35,6 +36,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     xterm \
     # Streaming
     ffmpeg \
+    # Intel QSV / VA-API hardware encoding
+    intel-media-va-driver \
+    libva2 \
+    libva-drm2 \
+    vainfo \
     # Audio
     pulseaudio \
     # SSH
@@ -71,6 +77,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     fonts-liberation \
     fonts-dejavu-core \
     && rm -rf /var/lib/apt/lists/*
+
+# Enable Widevine DRM in Firefox ESR
+# Firefox will auto-download Widevine CDM on first DRM content request
+# but we need to ensure the preferences allow it
+RUN mkdir -p /usr/lib/firefox-esr/distribution && \
+    printf '{"policies":{"DontCheckDefaultBrowser":true,"DisableAppUpdate":true,"EnableTrackingProtection":{"Value":false},"EncryptedMediaExtensions":{"Enabled":true,"Locked":true}}}\n' \
+    > /usr/lib/firefox-esr/distribution/policies.json
 
 # Patch VLC to allow running as root
 RUN sed -i 's/geteuid/getppid/' /usr/bin/vlc
