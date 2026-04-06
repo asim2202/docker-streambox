@@ -1,0 +1,25 @@
+[begin] (StreamBox)
+    [submenu] (Stream Control)
+        [exec] (Start Stream) {/opt/streambox/start-stream.sh}
+        [exec] (Stop Stream) {/opt/streambox/stop-stream.sh}
+        [exec] (Restart Stream) {/opt/streambox/restart-stream.sh}
+        [exec] (Stream Status) {xterm -e "/opt/streambox/stream-status.sh; read -p 'Press Enter to close...'"}
+        [separator]
+        [exec] (Open Control Panel) {python3 /opt/streambox/stream-panel.py}
+    [end]
+    [separator]
+    [submenu] (Applications)
+        [exec] (Firefox) {firefox}
+        [exec] (VLC Media Player) {vlc}
+        [exec] (Terminal) {xterm -fa "DejaVu Sans Mono" -fs 11}
+    [end]
+    [separator]
+    [exec] (Terminal) {xterm -fa "DejaVu Sans Mono" -fs 11}
+    [separator]
+    [submenu] (Fluxbox)
+        [workspaces] (Workspaces)
+        [config] (Configuration)
+        [reconfig] (Reconfigure)
+        [restart] (Restart Fluxbox)
+    [end]
+[end]

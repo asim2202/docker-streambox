@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=Application
+Name=Stream Control Panel
+Exec=python3 /opt/streambox/stream-panel.py
+Icon=preferences-desktop
+Terminal=false
+Categories=Utility;

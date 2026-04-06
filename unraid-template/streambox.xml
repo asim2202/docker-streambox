@@ -1,0 +1,215 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Container version="2">
+  <Name>StreamBox</Name>
+  <Repository>ghcr.io/asim2202/streambox:latest</Repository>
+  <Registry>https://ghcr.io</Registry>
+  <Branch>
+    <Tag>latest</Tag>
+    <TagDescription>Latest stable release</TagDescription>
+  </Branch>
+  <Network>bridge</Network>
+  <Privileged>false</Privileged>
+  <Shell>bash</Shell>
+  <Support>https://github.com/asim2202/docker-streambox/issues</Support>
+  <Project>https://github.com/asim2202/docker-streambox</Project>
+  <Overview>
+    StreamBox - Virtual desktop container for RTMP streaming.
+    Features a full desktop environment with Firefox, VLC, and FFmpeg streaming.
+    Control via web-based VNC (noVNC), native VNC client, or SSH.
+    Includes a built-in stream control panel with live stats.
+    Stream your desktop to any RTMP server at up to 1080p 60fps.
+  </Overview>
+  <Category>MediaApp:Video MediaServer:Video</Category>
+  <WebUI>http://[IP]:[PORT:6080]/vnc.html?autoconnect=true&amp;resize=scale</WebUI>
+  <Icon>https://raw.githubusercontent.com/asim2202/docker-streambox/main/icon.png</Icon>
+  <ExtraParams>--shm-size=2g</ExtraParams>
+  <Description>
+    StreamBox provides a virtual desktop that streams to an RTMP server.
+    Access the desktop via your browser (noVNC), VNC client, or SSH.
+    Includes Firefox, VLC, and a stream control panel.
+  </Description>
+
+  <!-- noVNC Web Interface -->
+  <Config
+    Name="noVNC Web Port"
+    Target="6080"
+    Default="6080"
+    Mode="tcp"
+    Description="Port for web-based VNC access (noVNC). Access the desktop in your browser."
+    Type="Port"
+    Display="always"
+    Required="true"
+    Mask="false"
+  >6080</Config>
+
+  <!-- VNC Port -->
+  <Config
+    Name="VNC Port"
+    Target="5900"
+    Default="5900"
+    Mode="tcp"
+    Description="Port for native VNC client access (TightVNC, RealVNC, etc)."
+    Type="Port"
+    Display="always"
+    Required="true"
+    Mask="false"
+  >5900</Config>
+
+  <!-- SSH Port -->
+  <Config
+    Name="SSH Port"
+    Target="2222"
+    Default="2222"
+    Mode="tcp"
+    Description="Port for SSH access. Connect with: ssh root@SERVER_IP -p 2222"
+    Type="Port"
+    Display="always"
+    Required="true"
+    Mask="false"
+  >2222</Config>
+
+  <!-- RTMP URL -->
+  <Config
+    Name="RTMP Server URL"
+    Target="RTMP_URL"
+    Default="rtmp://your-rtmp-server/live"
+    Description="Your RTMP server URL (e.g. rtmp://192.168.1.100:1935/live or rtmp://a.rtmp.youtube.com/live2)"
+    Type="Variable"
+    Display="always"
+    Required="true"
+    Mask="false"
+  >rtmp://your-rtmp-server/live</Config>
+
+  <!-- Stream Key -->
+  <Config
+    Name="Stream Key"
+    Target="STREAM_KEY"
+    Default="your-stream-key"
+    Description="Your stream key or stream name. This is appended to the RTMP URL."
+    Type="Variable"
+    Display="always"
+    Required="true"
+    Mask="true"
+  >your-stream-key</Config>
+
+  <!-- VNC Password -->
+  <Config
+    Name="VNC Password"
+    Target="VNC_PASSWORD"
+    Default="streambox"
+    Description="Password for VNC access (both web and native client)."
+    Type="Variable"
+    Display="always"
+    Required="true"
+    Mask="true"
+  >streambox</Config>
+
+  <!-- SSH Password -->
+  <Config
+    Name="SSH Password"
+    Target="SSH_PASSWORD"
+    Default="streambox"
+    Description="Password for SSH root access."
+    Type="Variable"
+    Display="always"
+    Required="true"
+    Mask="true"
+  >streambox</Config>
+
+  <!-- Display Resolution -->
+  <Config
+    Name="Display Width"
+    Target="DISPLAY_WIDTH"
+    Default="1920"
+    Description="Virtual display width in pixels."
+    Type="Variable"
+    Display="advanced"
+    Required="false"
+    Mask="false"
+  >1920</Config>
+
+  <Config
+    Name="Display Height"
+    Target="DISPLAY_HEIGHT"
+    Default="1080"
+    Description="Virtual display height in pixels."
+    Type="Variable"
+    Display="advanced"
+    Required="false"
+    Mask="false"
+  >1080</Config>
+
+  <!-- FPS -->
+  <Config
+    Name="Stream FPS"
+    Target="FPS"
+    Default="60"
+    Description="Frames per second for the RTMP stream (30 or 60 recommended)."
+    Type="Variable"
+    Display="advanced"
+    Required="false"
+    Mask="false"
+  >60</Config>
+
+  <!-- Video Bitrate -->
+  <Config
+    Name="Video Bitrate"
+    Target="VIDEO_BITRATE"
+    Default="4500k"
+    Description="Video bitrate for the stream (e.g. 2500k, 4500k, 6000k). Higher = better quality but more bandwidth."
+    Type="Variable"
+    Display="advanced"
+    Required="false"
+    Mask="false"
+  >4500k</Config>
+
+  <!-- Audio Bitrate -->
+  <Config
+    Name="Audio Bitrate"
+    Target="AUDIO_BITRATE"
+    Default="128k"
+    Description="Audio bitrate for the stream (e.g. 96k, 128k, 192k)."
+    Type="Variable"
+    Display="advanced"
+    Required="false"
+    Mask="false"
+  >128k</Config>
+
+  <!-- Timezone -->
+  <Config
+    Name="Timezone"
+    Target="TZ"
+    Default="America/New_York"
+    Description="Your timezone (e.g. America/New_York, Europe/London, Asia/Tokyo)."
+    Type="Variable"
+    Display="always"
+    Required="false"
+    Mask="false"
+  >America/New_York</Config>
+
+  <!-- Config Volume -->
+  <Config
+    Name="Config Storage"
+    Target="/config"
+    Default="/mnt/user/appdata/streambox"
+    Mode="rw"
+    Description="Persistent storage for StreamBox configuration and data."
+    Type="Path"
+    Display="always"
+    Required="true"
+    Mask="false"
+  >/mnt/user/appdata/streambox</Config>
+
+  <!-- Media Volume (optional) -->
+  <Config
+    Name="Media Files"
+    Target="/media"
+    Default="/mnt/user/media"
+    Mode="ro"
+    Description="Optional: Mount your media library for playback in VLC (read-only)."
+    Type="Path"
+    Display="always"
+    Required="false"
+    Mask="false"
+  >/mnt/user/media</Config>
+</Container>

@@ -1,0 +1,8 @@
+# Ensure shell scripts and configs use LF endings (required for Linux/Docker)
+*.sh text eol=lf
+*.py text eol=lf
+*.conf text eol=lf
+*.desktop text eol=lf
+Dockerfile text eol=lf
+fluxbox-menu text eol=lf
+fluxbox-startup text eol=lf

@@ -1,0 +1,16 @@
+#!/bin/bash
+# Fluxbox startup script
+
+# Set a solid dark background
+xsetroot -solid "#1a1a2e" &
+
+# Disable screen blanking/screensaver
+xset s off
+xset -dpms
+xset s noblank
+
+# Set keyboard repeat rate
+xset r rate 300 30
+
+# The stream control panel is started by supervisord
+# Additional autostart apps can be added here
