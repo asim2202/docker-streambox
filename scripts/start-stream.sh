@@ -8,6 +8,9 @@ PROGRESSFILE="/tmp/streambox/ffmpeg-progress.log"
 # Source config
 source /tmp/streambox/config 2>/dev/null
 
+# Ensure DISPLAY is set
+export DISPLAY="${DISPLAY:-:99}"
+
 # Check if already running
 if [ -f "$PIDFILE" ] && kill -0 "$(cat $PIDFILE)" 2>/dev/null; then
     echo "[stream] FFmpeg is already running (PID: $(cat $PIDFILE))"
@@ -28,14 +31,18 @@ echo "[stream] Video: ${VIDEO_BITRATE} | Audio: ${AUDIO_BITRATE}"
 # - Encode with libx264 veryfast preset
 # - Stream to RTMP
 ffmpeg \
+    -thread_queue_size 1024 \
     -f x11grab \
     -video_size "${DISPLAY_WIDTH}x${DISPLAY_HEIGHT}" \
     -framerate "${FPS}" \
+    -draw_mouse 1 \
     -i "${DISPLAY}" \
+    -thread_queue_size 1024 \
+    -use_wallclock_as_timestamps 1 \
     -f pulse \
     -i virtual_speaker.monitor \
     -c:v libx264 \
-    -preset veryfast \
+    -preset "${ENCODER_PRESET:-veryfast}" \
     -tune zerolatency \
     -b:v "${VIDEO_BITRATE}" \
     -maxrate "${VIDEO_BITRATE}" \
@@ -43,10 +50,12 @@ ffmpeg \
     -pix_fmt yuv420p \
     -g $((FPS * 2)) \
     -keyint_min "${FPS}" \
+    -threads 0 \
     -c:a aac \
     -b:a "${AUDIO_BITRATE}" \
     -ar 44100 \
     -ac 2 \
+    -async 1 \
     -f flv \
     -progress "$PROGRESSFILE" \
     "${RTMP_URL}/${STREAM_KEY}" \

@@ -9,7 +9,7 @@
     [end]
     [separator]
     [submenu] (Applications)
-        [exec] (Firefox) {firefox}
+        [exec] (Firefox) {firefox-esr}
         [exec] (VLC Media Player) {vlc}
         [exec] (Terminal) {xterm -fa "DejaVu Sans Mono" -fs 11}
     [end]

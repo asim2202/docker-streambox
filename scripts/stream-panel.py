@@ -188,7 +188,12 @@ class StreamPanel:
                     if key == "fps" and stats["FPS"] == "--":
                         stats["FPS"] = val
                     elif key == "bitrate" and stats["Bitrate"] == "--":
-                        stats["Bitrate"] = val
+                        # Convert kbits/s to Mbps
+                        try:
+                            kbits = float(val.replace("kbits/s", "").strip())
+                            stats["Bitrate"] = f"{kbits / 1000:.2f} Mbps"
+                        except (ValueError, AttributeError):
+                            stats["Bitrate"] = val
                     elif key == "frame" and stats["Frames"] == "--":
                         stats["Frames"] = val
                     elif key == "drop_frames" and stats["Dropped"] == "--":

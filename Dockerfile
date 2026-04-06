@@ -14,6 +14,7 @@ ENV DISPLAY_DEPTH=24
 ENV FPS=60
 ENV VIDEO_BITRATE=4500k
 ENV AUDIO_BITRATE=128k
+ENV ENCODER_PRESET=veryfast
 ENV RTMP_URL=rtmp://localhost/live
 ENV STREAM_KEY=stream
 ENV VNC_PASSWORD=streambox
@@ -22,7 +23,7 @@ ENV TZ=America/New_York
 ENV PULSE_SERVER=/tmp/pulse-socket
 ENV HOME=/root
 
-# Install base packages
+# Install base packages (excluding Firefox - installed separately via PPA)
 RUN apt-get update && apt-get install -y --no-install-recommends \
     # Virtual display
     xvfb \
@@ -40,8 +41,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     openssh-server \
     # Process manager
     supervisor \
-    # Browser
-    firefox \
     # Media player
     vlc \
     # Python for control panel
@@ -52,6 +51,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     net-tools \
     procps \
+    software-properties-common \
     dbus-x11 \
     libglib2.0-0 \
     libnss3 \
@@ -69,6 +69,15 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     fonts-liberation \
     fonts-dejavu-core \
     && rm -rf /var/lib/apt/lists/*
+
+# Install Firefox ESR from Mozilla PPA (snap version doesn't work in Docker)
+RUN add-apt-repository -y ppa:mozillateam/ppa \
+    && echo -e "Package: *\nPin: release o=LP-PPA-mozillateam\nPin-Priority: 1001" > /etc/apt/preferences.d/mozilla-firefox \
+    && apt-get update && apt-get install -y --no-install-recommends firefox-esr \
+    && rm -rf /var/lib/apt/lists/*
+
+# Patch VLC to allow running as root
+RUN sed -i 's/geteuid/getppid/' /usr/bin/vlc
 
 # Install noVNC and websockify
 RUN mkdir -p /opt/novnc/utils/websockify \

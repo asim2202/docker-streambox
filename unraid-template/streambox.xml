@@ -163,6 +163,18 @@
     Mask="false"
   >4500k</Config>
 
+  <!-- Encoder Preset -->
+  <Config
+    Name="Encoder Preset"
+    Target="ENCODER_PRESET"
+    Default="veryfast"
+    Description="x264 encoder preset. Options from fastest to best quality: ultrafast, superfast, veryfast, faster, fast. Use ultrafast if CPU is struggling."
+    Type="Variable"
+    Display="advanced"
+    Required="false"
+    Mask="false"
+  >veryfast</Config>
+
   <!-- Audio Bitrate -->
   <Config
     Name="Audio Bitrate"
