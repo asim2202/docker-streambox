@@ -70,7 +70,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Firefox ESR from Mozilla binary (snap version doesn't work in Docker)
-RUN wget -q "https://download.mozilla.org/?product=firefox-esr-latest-ssl&os=linux64&lang=en-US" -O /tmp/firefox.tar.bz2 \
+RUN curl -fsSL -o /tmp/firefox.tar.bz2 "https://download.mozilla.org/?product=firefox-esr-latest-ssl&os=linux64&lang=en-US" \
     && tar xjf /tmp/firefox.tar.bz2 -C /opt/ \
     && ln -s /opt/firefox/firefox /usr/local/bin/firefox-esr \
     && rm /tmp/firefox.tar.bz2
