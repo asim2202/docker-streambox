@@ -72,7 +72,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 # Install Firefox ESR from Mozilla PPA (snap version doesn't work in Docker)
 RUN add-apt-repository -y ppa:mozillateam/ppa \
-    && echo -e "Package: *\nPin: release o=LP-PPA-mozillateam\nPin-Priority: 1001" > /etc/apt/preferences.d/mozilla-firefox \
+    && printf "Package: *\nPin: release o=LP-PPA-mozillateam\nPin-Priority: 1001\n" > /etc/apt/preferences.d/mozilla-firefox \
     && apt-get update && apt-get install -y --no-install-recommends firefox-esr \
     && rm -rf /var/lib/apt/lists/*
 
