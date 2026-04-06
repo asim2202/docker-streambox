@@ -1,4 +1,4 @@
-FROM ubuntu:22.04
+FROM debian:bookworm
 
 LABEL maintainer="StreamBox"
 LABEL description="Virtual desktop with RTMP streaming, VNC, and SSH access"
@@ -23,7 +23,7 @@ ENV TZ=America/New_York
 ENV PULSE_SERVER=/tmp/pulse-socket
 ENV HOME=/root
 
-# Install base packages (excluding Firefox - installed separately via PPA)
+# Install all packages in a single layer
 RUN apt-get update && apt-get install -y --no-install-recommends \
     # Virtual display
     xvfb \
@@ -41,6 +41,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     openssh-server \
     # Process manager
     supervisor \
+    # Browser (Debian has firefox-esr in standard repos)
+    firefox-esr \
     # Media player
     vlc \
     # Python for control panel
@@ -69,12 +71,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     fonts-liberation \
     fonts-dejavu-core \
     && rm -rf /var/lib/apt/lists/*
-
-# Install Firefox ESR from Mozilla binary (snap version doesn't work in Docker)
-RUN curl -fsSL -o /tmp/firefox.tar.bz2 "https://download.mozilla.org/?product=firefox-esr-latest-ssl&os=linux64&lang=en-US" \
-    && tar xjf /tmp/firefox.tar.bz2 -C /opt/ \
-    && ln -s /opt/firefox/firefox /usr/local/bin/firefox-esr \
-    && rm /tmp/firefox.tar.bz2
 
 # Patch VLC to allow running as root
 RUN sed -i 's/geteuid/getppid/' /usr/bin/vlc
