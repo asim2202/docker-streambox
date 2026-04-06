@@ -51,7 +51,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     net-tools \
     procps \
-    software-properties-common \
     dbus-x11 \
     libglib2.0-0 \
     libnss3 \
@@ -70,11 +69,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     fonts-dejavu-core \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Firefox ESR from Mozilla PPA (snap version doesn't work in Docker)
-RUN add-apt-repository -y ppa:mozillateam/ppa \
-    && printf "Package: *\nPin: release o=LP-PPA-mozillateam\nPin-Priority: 1001\n" > /etc/apt/preferences.d/mozilla-firefox \
-    && apt-get update && apt-get install -y --no-install-recommends firefox-esr \
-    && rm -rf /var/lib/apt/lists/*
+# Install Firefox ESR from Mozilla binary (snap version doesn't work in Docker)
+RUN wget -q "https://download.mozilla.org/?product=firefox-esr-latest-ssl&os=linux64&lang=en-US" -O /tmp/firefox.tar.bz2 \
+    && tar xjf /tmp/firefox.tar.bz2 -C /opt/ \
+    && ln -s /opt/firefox/firefox /usr/local/bin/firefox-esr \
+    && rm /tmp/firefox.tar.bz2
 
 # Patch VLC to allow running as root
 RUN sed -i 's/geteuid/getppid/' /usr/bin/vlc
