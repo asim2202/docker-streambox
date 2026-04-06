@@ -37,7 +37,7 @@ docker run -d \
   -e TZ=America/New_York \
   -v /path/to/config:/config \
   -v /path/to/media:/media:ro \
-  ghcr.io/asim2202/streambox:latest
+  ghcr.io/asim2202/docker-streambox:latest
 ```
 
 ## Unraid Installation

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Container version="2">
   <Name>StreamBox</Name>
-  <Repository>ghcr.io/asim2202/streambox:latest</Repository>
+  <Repository>ghcr.io/asim2202/docker-streambox:latest</Repository>
   <Registry>https://ghcr.io</Registry>
   <Branch>
     <Tag>latest</Tag>
