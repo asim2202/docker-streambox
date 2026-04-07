@@ -34,7 +34,7 @@ if [ "$ENCODER" = "qsv" ] && [ -e /dev/dri/renderD128 ]; then
     VIDEO_CODEC_ARGS="-vaapi_device /dev/dri/renderD128 \
         -vf format=nv12,hwupload \
         -c:v h264_vaapi \
-        -qp 23 \
+        -qp 26 \
         -g $((FPS * 2)) \
         -keyint_min ${FPS}"
 else
