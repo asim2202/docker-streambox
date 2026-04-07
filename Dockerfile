@@ -24,7 +24,10 @@ ENV TZ=America/New_York
 ENV PULSE_SERVER=/tmp/pulse-socket
 ENV HOME=/root
 
-# Install all packages in a single layer
+# VA-API environment for hardware acceleration
+ENV LIBVA_DRIVER_NAME=iHD
+
+# Install base packages from Bookworm
 RUN apt-get update && apt-get install -y --no-install-recommends \
     # Virtual display
     xvfb \
@@ -34,21 +37,14 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     x11vnc \
     # Web terminal
     xterm \
-    # Streaming
-    ffmpeg \
-    # Intel QSV / VA-API hardware encoding
-    intel-media-va-driver \
-    libva2 \
-    libva-drm2 \
-    vainfo \
     # Audio
     pulseaudio \
     # SSH
     openssh-server \
     # Process manager
     supervisor \
-    # Browser (Debian has firefox-esr in standard repos)
-    firefox-esr \
+    # Browser with DRM support
+    chromium \
     # Media player
     vlc \
     # Python for control panel
@@ -58,6 +54,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates \
     wget \
     curl \
+    xz-utils \
     net-tools \
     procps \
     dbus-x11 \
@@ -78,12 +75,26 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     fonts-dejavu-core \
     && rm -rf /var/lib/apt/lists/*
 
-# Enable Widevine DRM in Firefox ESR
-# Firefox will auto-download Widevine CDM on first DRM content request
-# but we need to ensure the preferences allow it
-RUN mkdir -p /usr/lib/firefox-esr/distribution && \
-    printf '{"policies":{"DontCheckDefaultBrowser":true,"DisableAppUpdate":true,"EnableTrackingProtection":{"Value":false},"EncryptedMediaExtensions":{"Enabled":true,"Locked":true}}}\n' \
-    > /usr/lib/firefox-esr/distribution/policies.json
+# Add Debian Trixie repo pinned for newer VA-API libraries only
+RUN echo 'deb http://deb.debian.org/debian trixie main' > /etc/apt/sources.list.d/trixie.list \
+    && printf 'Package: *\nPin: release n=trixie\nPin-Priority: 100\n\nPackage: libva*\nPin: release n=trixie\nPin-Priority: 500\n\nPackage: intel-media-va-driver*\nPin: release n=trixie\nPin-Priority: 500\n\nPackage: libigdgmm*\nPin: release n=trixie\nPin-Priority: 500\n' \
+    > /etc/apt/preferences.d/pin-trixie \
+    && apt-get update \
+    && apt-get install -y -t trixie \
+        libva2 \
+        libva-drm2 \
+        libva-x11-2 \
+        libva-wayland2 \
+        intel-media-va-driver \
+    && apt-get install -y --no-install-recommends vainfo \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install FFmpeg 7.1 with VA-API support (fixes memory leak in Debian's FFmpeg 5.1)
+RUN curl -sL https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-n7.1-latest-linux64-gpl-7.1.tar.xz -o /tmp/ffmpeg.tar.xz \
+    && cd /tmp && tar xf ffmpeg.tar.xz \
+    && cp /tmp/ffmpeg-n7*/bin/ffmpeg /usr/bin/ffmpeg \
+    && cp /tmp/ffmpeg-n7*/bin/ffprobe /usr/bin/ffprobe \
+    && rm -rf /tmp/ffmpeg*
 
 # Patch VLC to allow running as root
 RUN sed -i 's/geteuid/getppid/' /usr/bin/vlc
@@ -108,6 +119,7 @@ RUN mkdir -p /root/.config/pulse \
 
 # Create directories
 RUN mkdir -p /root/.fluxbox \
+    /root/Desktop \
     /var/log/streambox \
     /tmp/streambox \
     /config
@@ -117,6 +129,7 @@ COPY config/supervisord.conf /etc/supervisor/conf.d/streambox.conf
 COPY config/fluxbox-menu /root/.fluxbox/menu
 COPY config/fluxbox-startup /root/.fluxbox/startup
 COPY config/stream-panel.desktop /root/Desktop/StreamPanel.desktop
+COPY config/chromium.desktop /root/Desktop/Chromium.desktop
 
 # Copy scripts
 COPY scripts/entrypoint.sh /opt/streambox/entrypoint.sh
@@ -125,6 +138,8 @@ COPY scripts/stop-stream.sh /opt/streambox/stop-stream.sh
 COPY scripts/restart-stream.sh /opt/streambox/restart-stream.sh
 COPY scripts/stream-status.sh /opt/streambox/stream-status.sh
 COPY scripts/stream-panel.py /opt/streambox/stream-panel.py
+COPY scripts/healthcheck.sh /opt/streambox/healthcheck.sh
+COPY scripts/log-rotate.sh /opt/streambox/log-rotate.sh
 
 # Make scripts executable
 RUN chmod +x /opt/streambox/*.sh /opt/streambox/*.py
