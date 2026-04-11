@@ -1,8 +1,7 @@
 #!/bin/bash
 set -e
 
-# VA-API hardware decode for browsers
-export MOZ_DISABLE_RDD_SANDBOX=1
+# VA-API hardware acceleration
 export LIBVA_DRIVER_NAME=iHD
 
 echo "========================================="

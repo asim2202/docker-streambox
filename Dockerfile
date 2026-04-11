@@ -1,4 +1,4 @@
-FROM debian:bookworm
+FROM debian:trixie
 
 LABEL maintainer="StreamBox"
 LABEL description="Virtual desktop with RTMP streaming, VNC, and SSH access"
@@ -27,7 +27,7 @@ ENV HOME=/root
 # VA-API environment for hardware acceleration
 ENV LIBVA_DRIVER_NAME=iHD
 
-# Install base packages from Bookworm
+# Install all packages — single repo, no mixing
 RUN apt-get update && apt-get install -y --no-install-recommends \
     # Virtual display
     xvfb \
@@ -50,54 +50,21 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     # Python for control panel
     python3 \
     python3-tk \
+    # Media encoding (Trixie ships FFmpeg 7.x with VA-API support)
+    ffmpeg \
+    # VA-API hardware acceleration (Intel iGPU)
+    intel-media-va-driver \
+    vainfo \
     # Utilities
     ca-certificates \
     wget \
     curl \
-    xz-utils \
     net-tools \
     procps \
     dbus-x11 \
-    libglib2.0-0 \
-    libnss3 \
-    libatk1.0-0 \
-    libatk-bridge2.0-0 \
-    libcups2 \
-    libdrm2 \
-    libxcomposite1 \
-    libxdamage1 \
-    libxrandr2 \
-    libgbm1 \
-    libpango-1.0-0 \
-    libcairo2 \
-    libasound2 \
     fonts-liberation \
     fonts-dejavu-core \
     && rm -rf /var/lib/apt/lists/*
-
-# Add Debian Trixie repo pinned for newer VA-API libraries only
-# Note: -t trixie is required because Trixie's libva depends on glibc >= 2.38
-# which must also come from Trixie. The pin ensures only VA-API related
-# packages and their direct dependencies are upgraded.
-RUN echo 'deb http://deb.debian.org/debian trixie main' > /etc/apt/sources.list.d/trixie.list \
-    && printf 'Package: *\nPin: release n=trixie\nPin-Priority: 100\n\nPackage: libva*\nPin: release n=trixie\nPin-Priority: 500\n\nPackage: intel-media-va-driver*\nPin: release n=trixie\nPin-Priority: 500\n\nPackage: libigdgmm*\nPin: release n=trixie\nPin-Priority: 500\n' \
-    > /etc/apt/preferences.d/pin-trixie \
-    && apt-get update \
-    && apt-get install -y -t trixie \
-        libva2 \
-        libva-drm2 \
-        libva-x11-2 \
-        libva-wayland2 \
-        intel-media-va-driver \
-    && apt-get install -y --no-install-recommends vainfo \
-    && rm -rf /var/lib/apt/lists/*
-
-# Install FFmpeg 7.1 with VA-API support (fixes memory leak in Debian's FFmpeg 5.1)
-RUN curl -sL https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-n7.1-latest-linux64-gpl-7.1.tar.xz -o /tmp/ffmpeg.tar.xz \
-    && cd /tmp && tar xf ffmpeg.tar.xz \
-    && cp /tmp/ffmpeg-n7*/bin/ffmpeg /usr/bin/ffmpeg \
-    && cp /tmp/ffmpeg-n7*/bin/ffprobe /usr/bin/ffprobe \
-    && rm -rf /tmp/ffmpeg*
 
 # Patch VLC to allow running as root
 RUN sed -i 's/geteuid/getppid/' /usr/bin/vlc
