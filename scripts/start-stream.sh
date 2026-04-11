@@ -71,7 +71,7 @@ ffmpeg \
     -b:a "${AUDIO_BITRATE}" \
     -ar 44100 \
     -ac 2 \
-    -af aresample=async=1:first_pts=0 \
+    -af "adelay=500|500,aresample=async=1:first_pts=0" \
     -max_muxing_queue_size 1024 \
     -f flv \
     -progress "$PROGRESSFILE" \
