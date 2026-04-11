@@ -65,6 +65,7 @@ ffmpeg \
     -thread_queue_size 1024 \
     -f pulse \
     -i virtual_speaker.monitor \
+    -map 0:v -map 1:a \
     ${VIDEO_CODEC_ARGS} \
     -c:a aac \
     -b:a "${AUDIO_BITRATE}" \
