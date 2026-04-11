@@ -13,91 +13,118 @@
   <Support>https://github.com/asim2202/docker-streambox/issues</Support>
   <Project>https://github.com/asim2202/docker-streambox</Project>
   <Overview>
-    StreamBox - Virtual desktop container for RTMP streaming.
-    Features a full desktop environment with Firefox, VLC, and FFmpeg streaming.
-    Control via web-based VNC (noVNC), native VNC client, or SSH.
-    Includes a built-in stream control panel with live stats.
-    Stream your desktop to any RTMP server at up to 1080p 60fps.
+    StreamBox - Virtual 1080p60 desktop that streams to any RTMP server.
+    Uses Intel iGPU (VA-API) for hardware encoding with near-zero CPU usage.
+    Includes Chromium (with Widevine DRM), VLC, and a stream control panel.
+    Access the desktop via web browser (noVNC), native VNC client, or SSH.
+
+    IMPORTANT: Requires Intel iGPU passthrough (--device=/dev/dri:/dev/dri) and
+    --shm-size=2g for browser stability. These are set in Extra Parameters.
+
+    Tested stable for 6+ hours continuous streaming on i9-9900K (UHD 630).
   </Overview>
   <Category>MediaApp:Video MediaServer:Video</Category>
   <WebUI>http://[IP]:[PORT:6080]/vnc.html?autoconnect=true&amp;resize=scale</WebUI>
   <Icon>https://raw.githubusercontent.com/asim2202/docker-streambox/main/icon.png</Icon>
+
+  <!-- CRITICAL: --shm-size=2g prevents Chromium tab crashes (default 64MB is too small).
+       --device=/dev/dri:/dev/dri passes Intel iGPU for VA-API hardware encoding.
+       Without the GPU, FFmpeg falls back to software x264 (much higher CPU). -->
   <ExtraParams>--shm-size=2g --device=/dev/dri:/dev/dri</ExtraParams>
+
   <Description>
-    StreamBox provides a virtual desktop that streams to an RTMP server.
-    Access the desktop via your browser (noVNC), VNC client, or SSH.
-    Includes Firefox, VLC, and a stream control panel.
+    StreamBox streams a virtual desktop to an RTMP server using Intel VA-API hardware encoding.
+    Features Chromium with Widevine DRM support, VLC, and a built-in stream control panel.
+    Access via browser (noVNC), VNC client, or SSH. See README for full documentation.
   </Description>
 
-  <!-- noVNC Web Interface -->
+  <!-- ==================== PORTS ==================== -->
+
+  <!-- noVNC Web Interface - primary way to control the desktop -->
   <Config
     Name="noVNC Web Port"
     Target="6080"
     Default="6080"
     Mode="tcp"
-    Description="Port for web-based VNC access (noVNC). Access the desktop in your browser."
+    Description="Web-based VNC access. Open http://SERVER_IP:6080 in your browser to see and control the desktop. This is the easiest way to interact with StreamBox."
     Type="Port"
     Display="always"
     Required="true"
     Mask="false"
   >6080</Config>
 
-  <!-- VNC Port -->
+  <!-- VNC Port - for native VNC clients (better performance than web) -->
   <Config
     Name="VNC Port"
     Target="5900"
     Default="5900"
     Mode="tcp"
-    Description="Port for native VNC client access (TightVNC, RealVNC, etc)."
+    Description="Native VNC client access (TightVNC, RealVNC, etc). Better performance than noVNC for intensive use. Connect to SERVER_IP:5900 with your VNC client."
     Type="Port"
     Display="always"
     Required="true"
     Mask="false"
   >5900</Config>
 
-  <!-- SSH Port -->
+  <!-- SSH Port - for CLI management and monitoring -->
   <Config
     Name="SSH Port"
     Target="2222"
     Default="2222"
     Mode="tcp"
-    Description="Port for SSH access. Connect with: ssh root@SERVER_IP -p 2222"
+    Description="SSH access for CLI management. Connect with: ssh root@SERVER_IP -p 2222. Use for monitoring (stream-status), restarting (stream-restart), and checking logs."
     Type="Port"
     Display="always"
     Required="true"
     Mask="false"
   >2222</Config>
 
-  <!-- RTMP URL -->
+  <!-- ==================== STREAM SETTINGS ==================== -->
+
+  <!-- RTMP URL - the server to stream to -->
   <Config
     Name="RTMP Server URL"
     Target="RTMP_URL"
     Default="rtmp://your-rtmp-server/live"
-    Description="Your RTMP server URL (e.g. rtmp://192.168.1.100:1935/live or rtmp://a.rtmp.youtube.com/live2)"
+    Description="Your RTMP ingest URL. Examples: rtmp://192.168.1.100:1935/live (local server), rtmp://a.rtmp.youtube.com/live2 (YouTube). Do NOT include the stream key here -- that goes in the next field."
     Type="Variable"
     Display="always"
     Required="true"
     Mask="false"
   >rtmp://your-rtmp-server/live</Config>
 
-  <!-- Stream Key -->
+  <!-- Stream Key - appended to RTMP URL -->
   <Config
     Name="Stream Key"
     Target="STREAM_KEY"
     Default="your-stream-key"
-    Description="Your stream key or stream name. This is appended to the RTMP URL."
+    Description="Your stream key or stream name. This is appended to the RTMP URL to form the full path (e.g. rtmp://server/live/YOUR_KEY). Get this from your streaming platform or RTMP server config."
     Type="Variable"
     Display="always"
     Required="true"
     Mask="true"
   >your-stream-key</Config>
 
+  <!-- Encoder selection -->
+  <Config
+    Name="Video Encoder"
+    Target="ENCODER"
+    Default="qsv"
+    Description="BEST CHOICE: 'qsv' uses Intel VA-API hardware encoding (near-zero CPU, requires iGPU passthrough via --device=/dev/dri:/dev/dri). Use 'x264' only if you have no Intel GPU -- this uses software encoding and will consume significant CPU. The 'qsv' label is legacy; it actually uses h264_vaapi with CQP rate control."
+    Type="Variable"
+    Display="always"
+    Required="false"
+    Mask="false"
+  >qsv</Config>
+
+  <!-- ==================== ACCESS PASSWORDS ==================== -->
+
   <!-- VNC Password -->
   <Config
     Name="VNC Password"
     Target="VNC_PASSWORD"
     Default="streambox"
-    Description="Password for VNC access (both web and native client)."
+    Description="Password for VNC access (both noVNC web and native VNC clients). Change this from the default for security."
     Type="Variable"
     Display="always"
     Required="true"
@@ -109,30 +136,33 @@
     Name="SSH Password"
     Target="SSH_PASSWORD"
     Default="streambox"
-    Description="Password for SSH root access."
+    Description="Password for SSH root access (ssh root@SERVER_IP -p 2222). Change this from the default for security. You can also add SSH keys to /root/.ssh/authorized_keys inside the container."
     Type="Variable"
     Display="always"
     Required="true"
     Mask="true"
   >streambox</Config>
 
-  <!-- Display Resolution -->
+  <!-- ==================== ADVANCED: VIDEO ==================== -->
+
+  <!-- Display Resolution - Width -->
   <Config
     Name="Display Width"
     Target="DISPLAY_WIDTH"
     Default="1920"
-    Description="Virtual display width in pixels."
+    Description="Virtual display width in pixels. 1920 for 1080p, 1280 for 720p. Must match your RTMP server's expected input resolution. Changing this requires container restart."
     Type="Variable"
     Display="advanced"
     Required="false"
     Mask="false"
   >1920</Config>
 
+  <!-- Display Resolution - Height -->
   <Config
     Name="Display Height"
     Target="DISPLAY_HEIGHT"
     Default="1080"
-    Description="Virtual display height in pixels."
+    Description="Virtual display height in pixels. 1080 for 1080p, 720 for 720p. Must match your RTMP server's expected input resolution. Changing this requires container restart."
     Type="Variable"
     Display="advanced"
     Required="false"
@@ -144,43 +174,31 @@
     Name="Stream FPS"
     Target="FPS"
     Default="60"
-    Description="Frames per second for the RTMP stream (30 or 60 recommended)."
+    Description="Stream framerate. BEST CHOICE: 60 for smooth video/motion, 30 if bandwidth is limited. VA-API hardware encoding handles 60fps with near-zero CPU. Note: your RTMP server must accept and remux at the same FPS to avoid microstutter."
     Type="Variable"
     Display="advanced"
     Required="false"
     Mask="false"
   >60</Config>
 
-  <!-- Video Bitrate -->
+  <!-- Video Bitrate (x264 only) -->
   <Config
-    Name="Video Bitrate"
+    Name="Video Bitrate (x264 only)"
     Target="VIDEO_BITRATE"
     Default="4500k"
-    Description="Video bitrate for the stream (e.g. 2500k, 4500k, 6000k). Higher = better quality but more bandwidth."
+    Description="ONLY used when ENCODER=x264 (software encoding). Ignored for VA-API/QSV -- VA-API uses CQP (constant quality) at QP 26 which produces ~6-12 Mbps depending on content. To change VA-API quality, edit the -qp value in start-stream.sh (lower=better, 18-28 range)."
     Type="Variable"
     Display="advanced"
     Required="false"
     Mask="false"
   >4500k</Config>
 
-  <!-- Encoder -->
+  <!-- Encoder Preset (x264 only) -->
   <Config
-    Name="Video Encoder"
-    Target="ENCODER"
-    Default="qsv"
-    Description="Video encoder: 'qsv' for Intel Quick Sync (recommended, requires Intel GPU passthrough), 'x264' for CPU software encoding."
-    Type="Variable"
-    Display="always"
-    Required="false"
-    Mask="false"
-  >qsv</Config>
-
-  <!-- Encoder Preset -->
-  <Config
-    Name="Encoder Preset"
+    Name="Encoder Preset (x264 only)"
     Target="ENCODER_PRESET"
     Default="veryfast"
-    Description="x264 encoder preset. Options from fastest to best quality: ultrafast, superfast, veryfast, faster, fast. Use ultrafast if CPU is struggling."
+    Description="ONLY used when ENCODER=x264. Fastest to best quality: ultrafast, superfast, veryfast, faster, fast, medium. BEST CHOICE: 'veryfast' balances quality and CPU. Use 'ultrafast' if CPU is maxed out. Ignored when using VA-API hardware encoding."
     Type="Variable"
     Display="advanced"
     Required="false"
@@ -192,32 +210,36 @@
     Name="Audio Bitrate"
     Target="AUDIO_BITRATE"
     Default="128k"
-    Description="Audio bitrate for the stream (e.g. 96k, 128k, 192k)."
+    Description="AAC audio bitrate. BEST CHOICE: 128k for good quality stereo. 96k is fine for speech-only content, 192k for high-quality music. Higher values use marginally more bandwidth."
     Type="Variable"
     Display="advanced"
     Required="false"
     Mask="false"
   >128k</Config>
 
+  <!-- ==================== GENERAL ==================== -->
+
   <!-- Timezone -->
   <Config
     Name="Timezone"
     Target="TZ"
     Default="America/New_York"
-    Description="Your timezone (e.g. America/New_York, Europe/London, Asia/Tokyo)."
+    Description="Container timezone. Affects log timestamps and browser time display. Examples: America/New_York, America/Chicago, Europe/London, Asia/Dubai, Asia/Tokyo. Full list: https://en.wikipedia.org/wiki/List_of_tz_database_time_zones"
     Type="Variable"
     Display="always"
     Required="false"
     Mask="false"
   >America/New_York</Config>
 
-  <!-- Config Volume -->
+  <!-- ==================== STORAGE ==================== -->
+
+  <!-- Config Volume - persistent data -->
   <Config
     Name="Config Storage"
     Target="/config"
     Default="/mnt/user/appdata/streambox"
     Mode="rw"
-    Description="Persistent storage for StreamBox configuration and data."
+    Description="Persistent storage for container data (browser profiles, VNC config, etc). Survives container rebuilds. IMPORTANT: This grows over time with browser cache -- periodically check size."
     Type="Path"
     Display="always"
     Required="true"
@@ -226,11 +248,11 @@
 
   <!-- Media Volume (optional) -->
   <Config
-    Name="Media Files"
+    Name="Media Files (Optional)"
     Target="/media"
     Default="/mnt/user/media"
     Mode="ro"
-    Description="Optional: Mount your media library for playback in VLC (read-only)."
+    Description="Optional: Mount your media library for VLC playback inside the desktop. Mounted read-only to prevent accidental modifications. Leave empty if not needed."
     Type="Path"
     Display="always"
     Required="false"
