@@ -75,15 +75,15 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     fonts-dejavu-core \
     && rm -rf /var/lib/apt/lists/*
 
-# Add Debian Trixie repo pinned for ONLY VA-API libraries
-# IMPORTANT: Do NOT use -t trixie with apt-get — it overrides pin priorities
-# and pulls in Trixie's libc6/base-files, breaking the Bookworm base.
-# Pin priority 500 on the specific packages is enough to upgrade them.
+# Add Debian Trixie repo pinned for newer VA-API libraries only
+# Note: -t trixie is required because Trixie's libva depends on glibc >= 2.38
+# which must also come from Trixie. The pin ensures only VA-API related
+# packages and their direct dependencies are upgraded.
 RUN echo 'deb http://deb.debian.org/debian trixie main' > /etc/apt/sources.list.d/trixie.list \
     && printf 'Package: *\nPin: release n=trixie\nPin-Priority: 100\n\nPackage: libva*\nPin: release n=trixie\nPin-Priority: 500\n\nPackage: intel-media-va-driver*\nPin: release n=trixie\nPin-Priority: 500\n\nPackage: libigdgmm*\nPin: release n=trixie\nPin-Priority: 500\n' \
     > /etc/apt/preferences.d/pin-trixie \
     && apt-get update \
-    && apt-get install -y \
+    && apt-get install -y -t trixie \
         libva2 \
         libva-drm2 \
         libva-x11-2 \
