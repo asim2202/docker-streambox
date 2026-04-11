@@ -65,13 +65,12 @@ ffmpeg \
     -thread_queue_size 1024 \
     -f pulse \
     -i virtual_speaker.monitor \
-    -map 0:v -map 1:a \
     ${VIDEO_CODEC_ARGS} \
     -c:a aac \
     -b:a "${AUDIO_BITRATE}" \
     -ar 44100 \
     -ac 2 \
-    -af "adelay=500|500,aresample=async=1:first_pts=0" \
+    -af aresample=async=1:first_pts=0 \
     -max_muxing_queue_size 1024 \
     -f flv \
     -progress "$PROGRESSFILE" \
