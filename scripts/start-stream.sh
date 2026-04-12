@@ -26,13 +26,20 @@ echo "[stream] Video: ${VIDEO_BITRATE} | Audio: ${AUDIO_BITRATE}"
 > "$PROGRESSFILE"
 
 # Select encoder
+# IMPORTANT: PulseAudio input MUST be opened before x11grab. PulseAudio takes
+# ~1.3s to connect; opening it first means both inputs are producing by the
+# time FFmpeg starts muxing. If x11grab opens first, video runs 1.3s ahead
+# of audio, flooding the FLV with audio-only silence packets that choke
+# downstream RTMP transcoders (drops to 2fps).
 ENCODER="${ENCODER:-qsv}"
 
 if [ "$ENCODER" = "qsv" ] && [ -e /dev/dri/renderD128 ]; then
     echo "[stream] Using Intel VA-API hardware encoder"
     # CQP mode: qp=23 is good quality (lower=better, 18-28 typical range)
+    # Video is input 1 (x11grab), audio is input 0 (pulse)
     VIDEO_CODEC_ARGS="-vaapi_device /dev/dri/renderD128 \
-        -vf format=nv12,hwupload \
+        -filter_complex [1:v]format=nv12,hwupload[vout] \
+        -map [vout] -map 0:a \
         -c:v h264_vaapi \
         -qp 23 \
         -g $((FPS * 2)) \
@@ -42,7 +49,9 @@ else
         echo "[stream] WARNING: QSV requested but /dev/dri/renderD128 not found, falling back to x264"
     fi
     echo "[stream] Using x264 software encoder"
-    VIDEO_CODEC_ARGS="-c:v libx264 \
+    # Video is input 1 (x11grab), audio is input 0 (pulse)
+    VIDEO_CODEC_ARGS="-map 1:v -map 0:a \
+        -c:v libx264 \
         -preset ${ENCODER_PRESET:-veryfast} \
         -tune zerolatency \
         -b:v ${VIDEO_BITRATE} \
@@ -55,16 +64,17 @@ else
 fi
 
 # Start FFmpeg
+# Audio input (pulse) opens first — see comment above for why
 ffmpeg \
+    -thread_queue_size 1024 \
+    -f pulse \
+    -i virtual_speaker.monitor \
     -thread_queue_size 1024 \
     -f x11grab \
     -video_size "${DISPLAY_WIDTH}x${DISPLAY_HEIGHT}" \
     -framerate "${FPS}" \
     -draw_mouse 1 \
     -i "${DISPLAY}" \
-    -thread_queue_size 1024 \
-    -f pulse \
-    -i virtual_speaker.monitor \
     ${VIDEO_CODEC_ARGS} \
     -c:a aac \
     -b:a "${AUDIO_BITRATE}" \

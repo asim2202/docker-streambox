@@ -52,10 +52,11 @@ Xvfb (virtual display :99, 1920x1080x24)
 - QP 23 produces ~10-15 Mbps depending on content complexity (static desktop ~8 Mbps, full-motion video ~15 Mbps).
 - QP scale: lower = better quality, higher = smaller files. Range 18-28 is typical.
 
-### `-map 0:v -map 1:a` explicit stream mapping
-- Without explicit mapping, FLV container may order streams in a way that confuses downstream RTMP servers/transcoders.
-- Some RTMP servers assume stream #0 is video. If audio arrives first, the transcoder tries to decode audio as video and crashes.
-- This flag guarantees video is always stream #0 in the FLV output.
+### PulseAudio input opened before x11grab
+- PulseAudio takes ~1.3 seconds to connect and start producing audio samples. If x11grab (video) opens first, video runs 1.3 seconds ahead of audio.
+- This creates a 2-second gap in the FLV output where video has one frame followed by a flood of tiny silence-padded audio packets with no video interleaved.
+- Downstream RTMP transcoders (especially QSV-based ones) choke on this audio-only flood and never recover, throttling the stream to 2fps.
+- Opening PulseAudio first means it's already connected and producing by the time x11grab starts. Both inputs begin near-simultaneously, producing clean interleaved FLV packets from frame 1.
 
 ### `-max_muxing_queue_size 1024`
 - Prevents "Too many packets buffered for output stream" errors that cause FFmpeg to crash during long streams.
