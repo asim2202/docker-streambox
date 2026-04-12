@@ -1,7 +1,0 @@
-[Desktop Entry]
-Type=Application
-Name=Chromium Browser
-Exec=chromium --no-sandbox --no-first-run --enable-encrypted-media --disable-features=VaapiVideoDecoder --use-gl=egl --enable-gpu-rasterization --enable-zero-copy --window-size=1280,720
-Icon=chromium
-Terminal=false
-Categories=Network;WebBrowser;

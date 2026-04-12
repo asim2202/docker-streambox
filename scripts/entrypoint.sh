@@ -22,8 +22,6 @@ ln -snf /usr/share/zoneinfo/${TZ} /etc/localtime
 echo "${TZ}" > /etc/timezone
 echo "[entrypoint] Timezone set to ${TZ}"
 
-# Create Xvfb args based on resolution
-export XVFB_ARGS=":99 -screen 0 ${DISPLAY_WIDTH}x${DISPLAY_HEIGHT}x${DISPLAY_DEPTH} -ac +extension GLX +render -noreset"
 echo "[entrypoint] Display: ${DISPLAY_WIDTH}x${DISPLAY_HEIGHT}x${DISPLAY_DEPTH}"
 
 # Create PulseAudio config
@@ -36,9 +34,6 @@ set-default-sink virtual_speaker
 set-default-source virtual_mic
 EOF
 echo "[entrypoint] PulseAudio configured with virtual sink"
-
-# Create Desktop directory
-mkdir -p /root/Desktop
 
 # Ensure log directory exists
 mkdir -p /var/log/streambox

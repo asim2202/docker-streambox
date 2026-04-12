@@ -89,17 +89,15 @@ RUN mkdir -p /root/.config/pulse \
 
 # Create directories
 RUN mkdir -p /root/.fluxbox \
-    /root/Desktop \
     /var/log/streambox \
     /tmp/streambox \
     /config
 
 # Copy configuration files
 COPY config/supervisord.conf /etc/supervisor/conf.d/streambox.conf
+COPY config/fluxbox-init /root/.fluxbox/init
 COPY config/fluxbox-menu /root/.fluxbox/menu
 COPY config/fluxbox-startup /root/.fluxbox/startup
-COPY config/stream-panel.desktop /root/Desktop/StreamPanel.desktop
-COPY config/chromium.desktop /root/Desktop/Chromium.desktop
 
 # Copy scripts
 COPY scripts/entrypoint.sh /opt/streambox/entrypoint.sh
