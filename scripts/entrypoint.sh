@@ -39,6 +39,9 @@ echo "[entrypoint] PulseAudio configured with virtual sink"
 mkdir -p /var/log/streambox
 mkdir -p /tmp/streambox
 
+# Ensure persistent Chromium profile directory exists
+mkdir -p /config/chromium
+
 # Write stream config for scripts to read
 cat > /tmp/streambox/config << EOF
 RTMP_URL=${RTMP_URL}

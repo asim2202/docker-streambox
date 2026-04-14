@@ -65,7 +65,10 @@ fi
 
 # Start FFmpeg
 # Audio input (pulse) opens first — see comment above for why
+# -itsoffset 0.5 delays audio by 0.5s to compensate for PulseAudio connection
+# latency, keeping audio in sync with video
 ffmpeg \
+    -itsoffset 0.5 \
     -thread_queue_size 1024 \
     -f pulse \
     -i virtual_speaker.monitor \
