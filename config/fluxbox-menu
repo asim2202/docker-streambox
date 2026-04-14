@@ -9,7 +9,7 @@
     [end]
     [separator]
     [submenu] (Applications)
-        [exec] (Chromium) {chromium --no-sandbox --no-first-run --enable-encrypted-media --disable-features=VaapiVideoDecoder --use-gl=egl --enable-gpu-rasterization --enable-zero-copy --window-size=1280,720}
+        [exec] (Chromium) {chromium --no-sandbox --no-first-run --enable-encrypted-media --enable-features=VaapiVideoDecoder,VaapiVideoEncoder --use-gl=angle --use-angle=gl --enable-gpu-rasterization --enable-zero-copy --window-size=1280,720}
         [exec] (VLC Media Player) {vlc}
         [exec] (Terminal) {xterm -fa "DejaVu Sans Mono" -fs 11}
     [end]

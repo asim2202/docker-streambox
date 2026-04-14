@@ -80,7 +80,7 @@ ffmpeg \
     -b:a "${AUDIO_BITRATE}" \
     -ar 44100 \
     -ac 2 \
-    -af aresample=async=1:first_pts=0 \
+    -af "aresample=async=1000:min_hard_comp=0.1:first_pts=0" \
     -max_muxing_queue_size 1024 \
     -f flv \
     -progress "$PROGRESSFILE" \
