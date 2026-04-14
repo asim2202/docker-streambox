@@ -65,10 +65,12 @@ fi
 
 # Start FFmpeg
 # Audio input (pulse) opens first — see comment above for why
-# -itsoffset 0.5 delays audio by 0.5s to compensate for PulseAudio connection
-# latency, keeping audio in sync with video
+# -use_wallclock_as_timestamps 1 stamps audio with real-world capture time,
+# so FFmpeg aligns audio and video by actual clock time regardless of
+# PulseAudio connection latency. aresample=async=1 continuously micro-corrects
+# any drift (1 sample at a time, inaudible).
 ffmpeg \
-    -itsoffset 0.5 \
+    -use_wallclock_as_timestamps 1 \
     -thread_queue_size 1024 \
     -f pulse \
     -i virtual_speaker.monitor \
@@ -83,7 +85,7 @@ ffmpeg \
     -b:a "${AUDIO_BITRATE}" \
     -ar 44100 \
     -ac 2 \
-    -af "aresample=async=1000:min_hard_comp=0.1:first_pts=0" \
+    -af "aresample=async=1" \
     -max_muxing_queue_size 1024 \
     -f flv \
     -progress "$PROGRESSFILE" \
