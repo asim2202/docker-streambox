@@ -39,8 +39,12 @@ echo "[entrypoint] PulseAudio configured with virtual sink"
 mkdir -p /var/log/streambox
 mkdir -p /tmp/streambox
 
-# Ensure persistent Chromium profile directory exists
+# Ensure persistent Chromium profile directory exists and is owned by root
 mkdir -p /config/chromium
+chown -R root:root /config/chromium 2>/dev/null
+# Clear stale Chromium profile locks from previous container
+rm -f /config/chromium/SingletonLock /config/chromium/SingletonSocket /config/chromium/SingletonCookie
+echo "[entrypoint] Chromium profile ready (/config/chromium)"
 
 # Write stream config for scripts to read
 cat > /tmp/streambox/config << EOF

@@ -9,7 +9,7 @@
     [end]
     [separator]
     [submenu] (Applications)
-        [exec] (Chromium) {chromium --no-sandbox --no-first-run --enable-encrypted-media --enable-features=VaapiVideoDecoder,VaapiVideoEncoder --enable-gpu-rasterization --enable-zero-copy --start-maximized --disable-backgrounding-occluded-windows --disable-renderer-backgrounding --user-data-dir=/config/chromium}
+        [exec] (Chromium) {chromium --no-sandbox --no-first-run --enable-encrypted-media --enable-features=VaapiVideoDecoder,VaapiVideoEncoder --enable-gpu-rasterization --enable-zero-copy --start-maximized --disable-backgrounding-occluded-windows --disable-renderer-backgrounding --user-data-dir=/config/chromium --ignore-gpu-blocklist --enable-accelerated-video-decode}
         [exec] (VLC Media Player) {vlc}
         [exec] (Terminal) {xterm -fa "DejaVu Sans Mono" -fs 11}
     [end]
