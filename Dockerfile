@@ -64,6 +64,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     dbus-x11 \
     fonts-liberation \
     fonts-dejavu-core \
+    # Bigger cursor for touch
+    dmz-cursor-theme \
     && rm -rf /var/lib/apt/lists/*
 
 # Patch VLC to allow running as root
@@ -73,7 +75,8 @@ RUN sed -i 's/geteuid/getppid/' /usr/bin/vlc
 RUN mkdir -p /opt/novnc/utils/websockify \
     && wget -qO- https://github.com/novnc/noVNC/archive/refs/tags/v1.4.0.tar.gz | tar xz --strip-components=1 -C /opt/novnc \
     && wget -qO- https://github.com/novnc/websockify/archive/refs/tags/v0.11.0.tar.gz | tar xz --strip-components=1 -C /opt/novnc/utils/websockify \
-    && ln -s /opt/novnc/vnc.html /opt/novnc/index.html
+    && rm -f /opt/novnc/index.html \
+    && printf '<!DOCTYPE html><html><head><meta http-equiv="refresh" content="0; url=vnc.html?autoconnect=true&resize=remote&scale=true&show_dot=true&reconnect=true&path=websockify"></head></html>' > /opt/novnc/index.html
 
 # Configure SSH
 RUN mkdir -p /var/run/sshd \

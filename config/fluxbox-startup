@@ -12,5 +12,8 @@ xset s noblank
 # Set keyboard repeat rate
 xset r rate 300 30
 
+# Set bigger cursor for touch usability
+xsetroot -cursor_name left_ptr &
+
 # The stream control panel is started by supervisord
 # Additional autostart apps can be added here
