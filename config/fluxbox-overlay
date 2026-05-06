@@ -1,0 +1,14 @@
+! Fluxbox style overlay — overrides style file resources for touch usability
+! Bigger right-click menu fonts and taller items
+
+menu.frame.font:        sans Bold 14
+menu.title.font:        sans Bold 16
+menu.hilite.font:       sans Bold 14
+menu.itemHeight:        36
+menu.titleHeight:       40
+menu.bevelWidth:        4
+menu.borderWidth:       2
+
+! Window titlebar — bigger for tap targets
+window.font:            sans Bold 12
+window.title.height:    28

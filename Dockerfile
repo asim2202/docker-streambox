@@ -76,7 +76,7 @@ RUN mkdir -p /opt/novnc/utils/websockify \
     && wget -qO- https://github.com/novnc/noVNC/archive/refs/tags/v1.4.0.tar.gz | tar xz --strip-components=1 -C /opt/novnc \
     && wget -qO- https://github.com/novnc/websockify/archive/refs/tags/v0.11.0.tar.gz | tar xz --strip-components=1 -C /opt/novnc/utils/websockify \
     && rm -f /opt/novnc/index.html \
-    && printf '<!DOCTYPE html><html><head><meta http-equiv="refresh" content="0; url=vnc.html?autoconnect=true&resize=remote&scale=true&show_dot=true&reconnect=true&path=websockify"></head></html>' > /opt/novnc/index.html
+    && printf '<!DOCTYPE html><html><head><meta http-equiv="refresh" content="0; url=vnc.html?autoconnect=true&resize=scale&reconnect=true&path=websockify"></head></html>' > /opt/novnc/index.html
 
 # Configure SSH
 RUN mkdir -p /var/run/sshd \
@@ -101,6 +101,7 @@ COPY config/supervisord.conf /etc/supervisor/conf.d/streambox.conf
 COPY config/fluxbox-init /root/.fluxbox/init
 COPY config/fluxbox-menu /root/.fluxbox/menu
 COPY config/fluxbox-startup /root/.fluxbox/startup
+COPY config/fluxbox-overlay /root/.fluxbox/overlay
 
 # Copy scripts
 COPY scripts/entrypoint.sh /opt/streambox/entrypoint.sh
